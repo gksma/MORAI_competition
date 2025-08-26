@@ -24,7 +24,7 @@ public:
     void run();
 
 private:
-    void pathCallback(const nav_msgs::Path::ConstPtr& msg);
+    void latticePathCallback(const nav_msgs::Path::ConstPtr& msg);
     void statusCallback(const morai_msgs::EgoVehicleStatus::ConstPtr& msg);
     void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
     void globalPathCallback(const nav_msgs::Path::ConstPtr& msg);
@@ -36,7 +36,7 @@ private:
     ros::NodeHandle nh_;
 
     ros::Subscriber global_path_sub_;
-    ros::Subscriber local_path_sub_;
+    ros::Subscriber lattice_path_sub_;
     ros::Subscriber mode_sub_;
     ros::Subscriber odom_sub_;
     ros::Subscriber status_sub_;

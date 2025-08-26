@@ -13,6 +13,7 @@
     <!-- Path Planning -->
     <node pkg="path_planning" type="global_path_pub.py" name="global_path"  output="screen"/>
     <node pkg="path_planning" type="local_path_pub.py" name="local_path"  />
+    <node pkg="path_planning" type="lattice_planner.py" name="lattice_planner" output="screen" />
     
     <!-- Prediction Cpp version -->
     <!-- <node pkg="prediction" type="object_tracker_node" name="dynamic_object_tracker"/>

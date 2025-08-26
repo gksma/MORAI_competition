@@ -2,7 +2,7 @@
 
 PurePursuit::PurePursuit() : nh_("~"), pid_(), vel_planning_(0, 0.15) {
     global_path_sub_ = nh_.subscribe("/global_path", 1, &PurePursuit::globalPathCallback, this);
-    local_path_sub_ = nh_.subscribe("/local_path", 1, &PurePursuit::pathCallback, this);
+    lattice_path_sub_ = nh_.subscribe("/lattice_path", 1, &PurePursuit::latticePathCallback, this);
     mode_sub_ = nh_.subscribe("/mode", 1, &PurePursuit::modeCallback, this);
     odom_sub_ = nh_.subscribe("/odom", 1, &PurePursuit::odomCallback, this);
     status_sub_ = nh_.subscribe("/Ego_topic", 1, &PurePursuit::statusCallback, this);
@@ -43,10 +43,9 @@ void PurePursuit::run() {
     while (ros::ok()) {
         if (is_path_ && is_odom_ && is_status_) {
             int current_waypoint = getCurrentWaypoint(status_msg_);
-            // std::cout << target_velocity_ << std::endl;
             target_velocity_ = velocity_list_[current_waypoint] * 3;
             double steering = calcPurePursuit();
-            // std::cout << steering << std::endl;
+            
             if (is_look_forward_point_) {
                 ctrl_cmd_msg_.steering = steering;
             } else {
@@ -88,30 +87,28 @@ void PurePursuit::run() {
                 }
             }
 
-            // ROS_INFO("Publishing control command: accel=%.2f, brake=%.2f, steering=%.2f",
-            //          ctrl_cmd_msg_.accel, ctrl_cmd_msg_.brake, ctrl_cmd_msg_.steering);
-
             ctrl_cmd_pub_.publish(ctrl_cmd_msg_);
-        // } else {
-        //     ROS_WARN("Waiting for required data: is_path_=%d, is_odom_=%d, is_status_=%d",
-        //              is_path_, is_odom_, is_status_);
         }
         rate.sleep();
         ros::spinOnce();
     }
 }
 
-void PurePursuit::pathCallback(const nav_msgs::Path::ConstPtr& msg) {
+void PurePursuit::latticePathCallback(const nav_msgs::Path::ConstPtr& msg) {
     is_path_ = true;
     path_ = *msg;
-    // ROS_INFO("Path received");
+    // ROS_INFO("Lattice path received");
 }
+
+// void PurePursuit::pathCallback(const nav_msgs::Path::ConstPtr& msg) {
+//     is_path_ = true;
+//     path_ = *msg;
+//     // ROS_INFO("Path received");
+// }
 
 void PurePursuit::statusCallback(const morai_msgs::EgoVehicleStatus::ConstPtr& msg) {
     is_status_ = true;
     status_msg_ = *msg;
-    // ROS_INFO("Status received: position=(%.2f, %.2f), velocity=%.2f", 
-    //          msg->position.x, msg->position.y, msg->velocity.x);
 }
 
 void PurePursuit::odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
@@ -126,7 +123,6 @@ void PurePursuit::odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     tf::Matrix3x3(odom_quaternion).getRPY(roll, pitch, vehicle_yaw_);
     current_position_.x = msg->pose.pose.position.x;
     current_position_.y = msg->pose.pose.position.y;
-    // ROS_INFO("Odometry received");
 }
 
 void PurePursuit::globalPathCallback(const nav_msgs::Path::ConstPtr& msg) {
@@ -136,17 +132,15 @@ void PurePursuit::globalPathCallback(const nav_msgs::Path::ConstPtr& msg) {
     for (const auto& pose : msg->poses) {
         global_path_coords_.emplace_back(pose.pose.position.x, pose.pose.position.y);
     }
-    // ROS_INFO("Global path received");
+    ROS_INFO("Received global path data");
 }
 
 void PurePursuit::collisionCallback(const std_msgs::Bool::ConstPtr& msg) {
     is_collision_ = msg->data;
-    // ROS_INFO("Collision status received: %d", is_collision_);
 }
 
 void PurePursuit::modeCallback(const std_msgs::String::ConstPtr& msg) {
     mode_ = msg->data;
-    // ROS_INFO("Mode received: %s", mode_.c_str());
 }
 
 int PurePursuit::getCurrentWaypoint(const morai_msgs::EgoVehicleStatus& ego_status) {
@@ -163,7 +157,6 @@ int PurePursuit::getCurrentWaypoint(const morai_msgs::EgoVehicleStatus& ego_stat
             closest_waypoint = i;
         }
     }
-    // ROS_INFO("closest_waypoint: %d", closest_waypoint);
     return closest_waypoint;
 }
 
@@ -195,10 +188,8 @@ double PurePursuit::calcPurePursuit() {
 
     if (is_look_forward_point_) {
         double theta = atan2(forward_point_.y - current_position_.y, forward_point_.x - current_position_.x) - vehicle_yaw_;
-        // ROS_INFO("Calculated steering angle: %.2f", atan2(2 * vehicle_length_ * sin(theta), lfd_));
         return atan2(2 * vehicle_length_ * sin(theta), lfd_);
     } else {
-        // ROS_WARN("No look forward point found");
         return 0.0;
     }
 }
