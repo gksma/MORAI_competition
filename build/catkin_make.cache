@@ -1,2 +1,0 @@
-MORAI-ROS_morai_msgs:auto_driving:beginner_tutorials_answer:control:path_planning:prediction
--DCATKIN_DEVEL_PREFIX=/home/stier/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/stier/catkin_ws/install -G Unix Makefiles

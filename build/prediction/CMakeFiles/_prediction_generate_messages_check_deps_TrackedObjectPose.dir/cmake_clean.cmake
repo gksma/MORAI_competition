@@ -1,8 +1,0 @@
-file(REMOVE_RECURSE
-  "CMakeFiles/_prediction_generate_messages_check_deps_TrackedObjectPose"
-)
-
-# Per-language clean rules from dependency scanning.
-foreach(lang )
-  include(CMakeFiles/_prediction_generate_messages_check_deps_TrackedObjectPose.dir/cmake_clean_${lang}.cmake OPTIONAL)
-endforeach()
